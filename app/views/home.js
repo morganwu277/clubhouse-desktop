@@ -119,11 +119,14 @@ const Home = {
 		},
 		getEvents: async function() {
 			if (this.userData && this.userData.user_profile) {
-				const result = await ClubHouseApi.api.getEvents(this.reqProfile, true);
-				console.log(result);
+				const result = await ClubHouseApi.api.getEvents(this.reqProfile, {size: 100, page: 1});
 				if (result.success) {
 					this.eventsResult = result;
-					this.events = result.events;
+					this.events = result.events
+						.filter(r => { return r.time_start <= new Date().toISOString(); })
+						.sort((r1, r2) => r1.time_start > r2.time_start);
+					this.events.forEach(r => { if (r.club === null) { r.club = {}; r.club.name = "EMPTY CLUB"; } });
+					console.log("getEvents result xxx");
 					this.eventsLoading = false;
 				} else {
 					console.error(result);
@@ -139,15 +142,23 @@ const Home = {
 		getChannels: async function() {
 			const $this = this;
 			if (this.userData && this.userData.user_profile) {
-				const result = await ClubHouseApi.api.getChannels(this.reqProfile);
+				const result = await ClubHouseApi.api.getChannels(this.reqProfile, {size: 100, page: 1});
 				console.log(result);
 				if (result.success) {
 					this.channelsResult = result;
-					this.channels = result.channels.filter(channel =>
-						store.get("settings").filterEastern
-							? isLatinString(channel.topic)
-							: true
-					);
+					this.channels = result.channels.filter(channel => {
+						if (store.get("settings").filterEastern == 1) {
+							return isLatinString(channel.topic);
+						} else if (store.get("settings").filterEastern == -1) {
+							// console.log(channel);
+							return !isLatinString(channel.topic) || channel.topic == null;
+						} else if (store.get("settings").filterEastern == 0) {
+							return true;
+						}
+					});
+					this.channels.forEach(r => { if (r.club === null) { r.club = {}; r.club.name = "EMPTY CLUB"; } });
+					console.log("getChannels result xxx");
+					console.log(this.channels.filter(r => { return r.club.name == ""; }));
 					this.channelsLoading = false;
 					if (this.channelsInterval) {
 						clearInterval(this.channelsInterval);
@@ -400,9 +411,12 @@ const Home = {
                 <div class="events" v-if="!eventsLoading">
                     <router-link :to="event.channel ? {name:'channel',params:{name: event.channel}} : '#'" class="event card my-2" v-for="event in events" :key="event.event_id">
                         <div class="card-header p-3">
-                            <h5 class="mb-0">{{event.name}}</h5>
+							<h5 class="mb-0">{{event.club.name}} | {{event.name}}</h5>
                         </div>
-                        <div class="card-body p-3" v-if="event.description.length">
+                        <div class="card-header p-3">
+							<h5 class="mb-0">{{event.time_start}}</h5>
+                        </div>
+						<div class="card-body p-3" v-if="event.description.length">
                             <p>{{event.description}}</p>
                         </div>
                     </router-link>
@@ -420,7 +434,7 @@ const Home = {
             <transition-group tag="div" name="channel" class="channels" v-if="!channelsLoading">
                 <router-link :to="{name:'channel',params:{id: channel.channel_id, name: channel.channel}}" class="channel card my-2" v-for="channel in (roomsKeyword ? channels.filter(c => c.topic && c.topic.toLowerCase().includes(roomsKeyword.toLowerCase())) : channels)" :key="channel.channel_id">
                     <div class="card-body p-3">
-                        <h5 class="mb-0">{{channel.topic}}</h5>
+                        <h5 class="mb-0">{{channel.club.name}} | {{channel.topic}}</h5>
                         <div class="channel-users" v-if="channel.users.length">
                             <div class="channel-users-images">
                                 <div class="channel-users-image">

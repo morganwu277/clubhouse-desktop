@@ -417,13 +417,17 @@ const User = {
                         <section>
                             <label>Hide Japanese/Chienese Rooms:</label>
                             <div class="row">
-                                <div class="col-6 input-group custom-radio">
+                                <div class="col-4 input-group custom-radio">
                                     <input type="radio" name="filterEastern" @change="changeFilterEastern" value="1" v-model="filterEastern"/>
                                     <label>On</label>
                                 </div>
-                                <div class="col-6 input-group custom-radio">
+                                <div class="col-4 input-group custom-radio">
                                     <input type="radio" name="filterEastern" @change="changeFilterEastern" value="0" v-model="filterEastern"/>
                                     <label>Off</label>
+                                </div>
+                                <div class="col-4 input-group custom-radio">
+                                    <input type="radio" name="filterEastern" @change="changeFilterEastern" value="-1" v-model="filterEastern"/>
+                                    <label>Only ZH/JP</label>
                                 </div>
                             </div>
                         </section>

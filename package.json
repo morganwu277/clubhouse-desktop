@@ -40,7 +40,7 @@
 		"@babel/register": "^7.0.0",
 		"agora-rtc-sdk": "^3.3.0",
 		"agora-rtm-sdk": "^1.4.2",
-		"clubhouse-api": "git+https://github.com/callmearta/clubhouse-api.git",
+		"clubhouse-api": "git+https://github.com/callmearta/clubhouse-api.git#master",
 		"cross-fetch": "^3.0.6",
 		"electron-context-menu": "^0.15.0",
 		"electron-debug": "^3.0.0",

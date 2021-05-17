@@ -82,7 +82,8 @@ const Channel = {
 			onlineFriendsLoading: true,
 			onlineFriendsInterval: null,
 			newRoomFriends: [],
-			newRoomType: null
+			newRoomType: null,
+			beingRecorded: false
 		};
 	},
 	beforeDestroy: function() {
@@ -126,6 +127,7 @@ const Channel = {
 			});
 			////console.log(result);
 			if (result.success) {
+				if (result.club == null) { result.club = {}; result.club.name = "EMPTY CLUB"; }
 				this.channel = result;
 				// if(this.users.length){
 				//     result.users.map(user => {
@@ -596,6 +598,17 @@ const Channel = {
 			}
 			this.$router.replace({ name: "home" });
 		},
+		goToHome: function() {
+			this.$router.replace({ name: "home" });
+		},
+		startRecord: function() {
+			// this.$router.replace({ name: "home" });
+			this.beingRecorded = !this.beingRecorded;
+		},
+		stopRecord: function() {
+			// this.$router.replace({ name: "home" });
+			this.beingRecorded = !this.beingRecorded;
+		},
 		mute: function() {
 			if (stream) {
 				stream.disableAudio();
@@ -731,11 +744,16 @@ const Channel = {
 				console.log(result);
 				if (result.success) {
 					this.channelsResult = result;
-					this.channels = result.channels.filter(channel =>
-						store.get("settings").filterEastern
-							? isLatinString(channel.topic)
-							: true
-					);
+					this.channels = result.channels.filter(channel => {
+						if (store.get("settings").filterEastern == 1) {
+							return isLatinString(channel.topic);
+						} else if (store.get("settings").filterEastern == -1) {
+							// console.log(channel);
+							return !isLatinString(channel.topic) || channel.topic == null;
+						} else if (store.get("settings").filterEastern == 0) {
+							return true;
+						}
+					});
 					this.channelsLoading = false;
 					if (this.channelsInterval) {
 						clearInterval(this.channelsInterval);
@@ -991,7 +1009,7 @@ const Channel = {
                     <router-link to="/me" class="mr-4 btn-light">
                         <i class="far fa-user"></i>
                     </router-link>
-                    <button @click="logout" class="btn-primary font-weight-bold font-size-small"><i class="fas fa-sign-out mr-2"></i>Logout</button>
+					<button @click="logout" class="btn-primary font-weight-bold font-size-small"><i class="fas fa-sign-out mr-2"></i>Logout</button>
                 </div>
             </div>
 
@@ -1029,7 +1047,7 @@ const Channel = {
             <loading v-if="loading"/>
             <div class="channel-inner" v-if="!loading">
                 <div class="d-flex align-items-center justify-content-between px-4 pt-4">
-                    <h1 class="h4 overflow-ellipsis">{{channel.topic}}</h1>
+                    <h1 class="h4 overflow-ellipsis">{{channel.club.name}} | {{channel.topic}}</h1>
                     <div class="d-flex align-items-center justify-content-end">
                         <button class="btn-light mr-3" @click="handRaise" v-if="!isSpeaker && channel.handraise_permission">
                             <img :src="this.handRaised ? 'assets/images/fist.png' : 'assets/images/handraise.png'" height="18" />
@@ -1043,6 +1061,15 @@ const Channel = {
                         <button class="btn-light mr-3" @click="mute" v-if="isSpeaker && users.find(user => user.user_id == userData.user_profile.user_id) && users.find(user => user.user_id == userData.user_profile.user_id).unmute">
                             <i class="far fa-microphone"></i>
                         </button>
+						<button class="btn-light mr-3" @click="goToHome">
+							<i class="far fa-home"></i>
+						</button>
+						<button class="btn-light mr-3" @click="startRecord" v-if="!beingRecorded">
+							<i class="far fa-play-circle"></i>
+						</button>
+						<button class="btn-light mr-3" @click="stopRecord" v-if="beingRecorded">
+							<i class="far fa-stop-circle"></i>
+						</button>
                         <button @click="leave" class="btn-primary">Leave Room</button>
                     </div>
                 </div>

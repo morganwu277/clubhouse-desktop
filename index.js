@@ -35,13 +35,13 @@ const createMainWindow = async () => {
 	const win = new BrowserWindow({
 		title: "Clubhouse Desktop Client",
 		show: false,
-		width: 1020,
+		width: 1360,
 		height: 800,
 		minWidth: 1360,
 		minHeight: 800,
 		titleBarStyle: "hidden",
 		fullscreenable: true,
-		fullscreen: true,
+		fullscreen: false,
 		frame: os.platform() == "linux" ? false : true,
 		icon: path.join(__dirname, "static/logo.png"),
 		webPreferences: {
