@@ -1,4 +1,4 @@
-Windows 安装 使用 录音
+# Windows 安装 使用 录音
 
 依次安装:
 ```sh
